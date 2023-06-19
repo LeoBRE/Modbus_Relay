@@ -1,7 +1,7 @@
 
 import serial
-import pycrc
 import time
+from libs import pycrc
 from enum import Enum
 
 NB_RELAY_PER_CARD = 8
@@ -31,7 +31,7 @@ class modbus_serial_relay:
     def open_single_relay(self, relay_number:int) -> None:
         assert isinstance(relay_number, int)
         assert (relay_number >= 0 and relay_number <= (NB_RELAY_PER_CARD - 1))
-        self.activate_single_relay(relay_number=relay_number)
+        # self.activate_single_relay(relay_number=relay_number)
         cmd = [0,0,0,0,0,0,0,0]
         cmd[0] = self.device_adress
         cmd[1] = function_code.CONTROLLING_RELAY
@@ -47,7 +47,7 @@ class modbus_serial_relay:
     def close_single_relay(self, relay_number:int) -> None:
         assert isinstance(relay_number, int)
         assert (relay_number >= 0 and relay_number <= (NB_RELAY_PER_CARD - 1))
-        self.activate_single_relay(relay_number=relay_number)
+        # self.activate_single_relay(relay_number=relay_number)
         cmd = [0,0,0,0,0,0,0,0]
         cmd[0] = self.device_adress
         cmd[1] = function_code.CONTROLLING_RELAY
@@ -63,7 +63,7 @@ class modbus_serial_relay:
     def flip_single_relay(self, relay_number:int) -> None:
         assert isinstance(relay_number, int)
         assert (relay_number >= 0 and relay_number <= (NB_RELAY_PER_CARD - 1))
-        self.activate_single_relay(relay_number=relay_number)
+        # self.activate_single_relay(relay_number=relay_number)
         cmd = [0,0,0,0,0,0,0,0]
         cmd[0] = self.device_adress
         cmd[1] = function_code.CONTROLLING_RELAY
