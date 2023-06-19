@@ -5,19 +5,17 @@ from enum import Enum
 NB_RELAY_PER_CARD = 8
 BROADCAST_ADRESS = 0x00
 
-class function_code(Enum):
-    READ_STATES_OF_RELAY = 0x01
-    READ_ADRESS_VERSION = 0x03
-    CONTROLLING_RELAY = 0x05
-    SET_BAUDRATE_ADRESS = 0x06
-    WRITE_RELAY_STATES = 0x0F
+READ_STATES_OF_RELAY = 0x01
+READ_ADRESS_VERSION = 0x03
+CONTROLLING_RELAY = 0x05
+SET_BAUDRATE_ADRESS = 0x06
+WRITE_RELAY_STATES = 0x0F
 
-class write_relay_state(Enum):
-    OPEN_RELAY = 0xFF
-    CLOSE_RELAY = 0x00
-    FLIP_RELAY = 0x55
+OPEN_RELAY = 0xFF
+CLOSE_RELAY = 0x00
+FLIP_RELAY = 0x55
 
-class modbus_eth_relay:
+class Modbus_eth_relay:
     def __init__(self, IP_adress:str, port_number:int) -> None:
         assert isinstance(IP_adress, str)
         assert isinstance(port_number, int)
@@ -65,13 +63,12 @@ class modbus_eth_relay:
     def open_single_relay(self, relay_number:int) -> None:
         assert isinstance(relay_number, int)
         assert (relay_number >= 0 and relay_number <= (NB_RELAY_PER_CARD - 1))
-        # self.activate_single_relay(relay_number=relay_number)
         cmd = [0,0,0,0,0,0,0,0]
         cmd[0] = self.device_adress
-        cmd[1] = function_code.CONTROLLING_RELAY
+        cmd[1] = CONTROLLING_RELAY
         cmd[2] = 0
         cmd[3] = relay_number
-        cmd[4] = write_relay_state.OPEN_RELAY
+        cmd[4] = OPEN_RELAY
         cmd[5] = 0
         crc = pycrc.ModbusCRC(cmd[0:6])
         cmd[6] = crc & 0xFF
@@ -83,13 +80,12 @@ class modbus_eth_relay:
     def close_single_relay(self, relay_number:int) -> None:
         assert isinstance(relay_number, int)
         assert (relay_number >= 0 and relay_number <= (NB_RELAY_PER_CARD - 1))
-        # self.activate_single_relay(relay_number=relay_number)
         cmd = [0,0,0,0,0,0,0,0]
         cmd[0] = self.device_adress
-        cmd[1] = function_code.CONTROLLING_RELAY
+        cmd[1] = CONTROLLING_RELAY
         cmd[2] = 0
         cmd[3] = relay_number
-        cmd[4] = write_relay_state.CLOSE_RELAY
+        cmd[4] = CLOSE_RELAY
         cmd[5] = 0
         crc = pycrc.ModbusCRC(cmd[0:6])
         cmd[6] = crc & 0xFF
@@ -101,13 +97,12 @@ class modbus_eth_relay:
     def flip_single_relay(self, relay_number:int) -> None:
         assert isinstance(relay_number, int)
         assert (relay_number >= 0 and relay_number <= (NB_RELAY_PER_CARD - 1))
-        # self.activate_single_relay(relay_number=relay_number)
         cmd = [0,0,0,0,0,0,0,0]
         cmd[0] = self.device_adress
-        cmd[1] = function_code.CONTROLLING_RELAY
+        cmd[1] = CONTROLLING_RELAY
         cmd[2] = 0
         cmd[3] = relay_number
-        cmd[4] = write_relay_state.FLIP_RELAY
+        cmd[4] = FLIP_RELAY
         cmd[5] = 0
         crc = pycrc.ModbusCRC(cmd[0:6])
         cmd[6] = crc & 0xFF
@@ -119,10 +114,10 @@ class modbus_eth_relay:
     def open_all_relay(self) -> None:
         cmd = [0,0,0,0,0,0,0,0]
         cmd[0] = self.device_adress
-        cmd[1] = function_code.CONTROLLING_RELAY
+        cmd[1] = CONTROLLING_RELAY
         cmd[2] = 0x00
         cmd[3] = 0xFF
-        cmd[4] = write_relay_state.OPEN_RELAY
+        cmd[4] = OPEN_RELAY
         cmd[5] = 0
         crc = pycrc.ModbusCRC(cmd[0:6])
         cmd[6] = crc & 0xFF
@@ -134,10 +129,10 @@ class modbus_eth_relay:
     def close_all_relay(self) -> None:
         cmd = [0,0,0,0,0,0,0,0]
         cmd[0] = self.device_adress
-        cmd[1] = function_code.CONTROLLING_RELAY
+        cmd[1] = CONTROLLING_RELAY
         cmd[2] = 0x00
         cmd[3] = 0xFF
-        cmd[4] = write_relay_state.CLOSE_RELAY
+        cmd[4] = CLOSE_RELAY
         cmd[5] = 0
         crc = pycrc.ModbusCRC(cmd[0:6])
         cmd[6] = crc & 0xFF
@@ -149,10 +144,10 @@ class modbus_eth_relay:
     def flip_all_relay(self) -> None:
         cmd = [0,0,0,0,0,0,0,0]
         cmd[0] = self.device_adress
-        cmd[1] = function_code.CONTROLLING_RELAY
+        cmd[1] = CONTROLLING_RELAY
         cmd[2] = 0x00
         cmd[3] = 0xFF
-        cmd[4] = write_relay_state.CLOSE_RELAY
+        cmd[4] = CLOSE_RELAY
         cmd[5] = 0
         crc = pycrc.ModbusCRC(cmd[0:6])
         cmd[6] = crc & 0xFF
@@ -164,7 +159,7 @@ class modbus_eth_relay:
     def read_all_relay_states(self) -> dict:
         cmd = [0,0,0,0,0,0,0,0]
         cmd[0] = self.device_adress
-        cmd[1] = function_code.READ_STATES_OF_RELAY
+        cmd[1] = READ_STATES_OF_RELAY
         cmd[2] = 0
         cmd[3] = 0
         cmd[4] = 0
@@ -189,7 +184,7 @@ class modbus_eth_relay:
         assert isinstance(relay_number, int)
         cmd = [0,0,0,0,0,0,0,0]
         cmd[0] = self.device_adress
-        cmd[1] = function_code.READ_STATES_OF_RELAY
+        cmd[1] = READ_STATES_OF_RELAY
         cmd[2] = 0
         cmd[3] = 0
         cmd[4] = 0
@@ -237,7 +232,7 @@ class modbus_eth_relay:
         assert (new_parity>=0x00 and new_parity<= 0x02)
         cmd = [0,0,0,0,0,0,0,0]
         cmd[0] = self.device_adress
-        cmd[1] = function_code.SET_BAUDRATE_ADRESS
+        cmd[1] = SET_BAUDRATE_ADRESS
         cmd[2] = 0x20
         cmd[3] = 0x00
         cmd[4] = new_parity # 0x00: no parity check, 0x01: even parity check, 0x02: odd parity check 
@@ -254,7 +249,7 @@ class modbus_eth_relay:
         assert (new_adress>=0x01 and new_adress<= 0xFF)
         cmd = [0,0,0,0,0,0,0,0]
         cmd[0] = self.device_adress
-        cmd[1] = function_code.SET_BAUDRATE_ADRESS
+        cmd[1] = SET_BAUDRATE_ADRESS
         cmd[2] = 0x40
         cmd[3] = 0x00
         cmd[4] = 0x00
@@ -269,7 +264,7 @@ class modbus_eth_relay:
     def read_device_adress(self)->int:
         cmd = [0,0,0,0,0,0,0,0]
         cmd[0] = BROADCAST_ADRESS
-        cmd[1] = function_code.READ_ADRESS_VERSION
+        cmd[1] = READ_ADRESS_VERSION
         cmd[2] = 0x40
         cmd[3] = 0x00
         cmd[4] = 0x00
@@ -289,7 +284,7 @@ class modbus_eth_relay:
     def read_device_software_version(self)->int:
         cmd = [0,0,0,0,0,0,0,0]
         cmd[0] = BROADCAST_ADRESS
-        cmd[1] = function_code.READ_ADRESS_VERSION
+        cmd[1] = READ_ADRESS_VERSION
         cmd[2] = 0x20
         cmd[3] = 0x00
         cmd[4] = 0x00
@@ -315,7 +310,7 @@ class modbus_eth_relay:
     #     relay_states = self.read_all_relay_states()
     #     cmd = [0,0,0,0,0,0,0,0,0,0]
     #     cmd[0] = self.device_adress
-    #     cmd[1] = function_code.WRITE_RELAY_STATES
+    #     cmd[1] = WRITE_RELAY_STATES
     #     cmd[2] = 0
     #     cmd[3] = 0
     #     cmd[4] = 0
@@ -332,7 +327,7 @@ class modbus_eth_relay:
     #     assert (relay_number >= 0 and relay_number <= (NB_RELAY_PER_CARD - 1))
     #     cmd = [0,0,0,0,0,0,0,0,0,0]
     #     cmd[0] = self.device_adress
-    #     cmd[1] = function_code.WRITE_RELAY_STATES
+    #     cmd[1] = WRITE_RELAY_STATES
     #     cmd[2] = 0
     #     cmd[3] = 0
     #     cmd[4] = 0
