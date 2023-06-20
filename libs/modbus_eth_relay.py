@@ -1,6 +1,5 @@
 import socket
 from libs import pycrc
-from enum import Enum
 
 NB_RELAY_PER_CARD = 8
 BROADCAST_ADRESS = 0x00
@@ -171,6 +170,7 @@ class Modbus_eth_relay:
         self.send_data(cmd)
         answer = self.socket.recv(self.port_number)
         self.close()
+        assert answer!=b'', "No data received"
         #Store result in a dict
         d = dict()
         for i in range [0:8]:
@@ -199,6 +199,7 @@ class Modbus_eth_relay:
         self.send_data(cmd)
         answer = self.socket.recv(self.port_number)
         self.close()
+        assert answer!=b'', "No data received"
         d =dict()
         if (answer[3] & 1<< relay_number) == 1:
             d['Relay ' + str(relay_number)] = 'Open'
@@ -279,6 +280,7 @@ class Modbus_eth_relay:
         self.send_data(cmd)
         answer = self.socket.recv(self.port_number)
         self.close()
+        assert answer!=b'', "No data received"
         return answer[4]
 
     def read_device_software_version(self)->int:
@@ -299,6 +301,7 @@ class Modbus_eth_relay:
         self.send_data(cmd)
         answer = self.socket.recv(self.port_number)
         self.close()
+        assert answer!=b'', "No data received"
         return answer[4]/100
 
 

@@ -1,7 +1,6 @@
 
 import serial
 from libs import pycrc
-from enum import Enum
 
 NB_RELAY_PER_CARD = 8
 BROADCAST_ADRESS = 0x00
@@ -124,10 +123,11 @@ class Modbus_serial_relay:
         try:
             answer = self.serial_device.read(6)
         except serial.SerialTimeoutException:
-            assert False, "No data received"
+            assert False, "Timeout"
+        assert answer!=b'', "No data received"
         #Store result in a dict
         d = dict()
-        for i in range [0:8]:
+        for i in range(8):
             if (answer[3] & 1<<i) == 1:
                 d['Relay ' + str(i)] = 'Open'
             if (answer[3] & 1<<i) == 0:
@@ -150,7 +150,8 @@ class Modbus_serial_relay:
         try:
             answer = self.serial_device.read(6)
         except serial.SerialTimeoutException:
-            assert False, "No data received"
+            assert False, "Timeout"
+        assert answer!=b'', "No data received"
         d =dict()
         if (answer[3] & 1<< relay_number) == 1:
             d['Relay ' + str(relay_number)] = 'Open'
@@ -224,7 +225,8 @@ class Modbus_serial_relay:
         try:
             answer = self.serial_device.read(7)
         except serial.SerialTimeoutException:
-            assert False, "No data received"
+            assert False, "Timeout"
+        assert answer!=b'', "No data received"
         return answer[4]
 
     def read_device_software_version(self)->int:
@@ -242,7 +244,8 @@ class Modbus_serial_relay:
         try:
             answer = self.serial_device.read(7)
         except serial.SerialTimeoutException:
-            assert False, "No data received"
+            assert False, "Timeout"
+        assert answer!=b'', "No data received"
         return answer[4]/100
 
 
