@@ -101,7 +101,7 @@ class Modbus_serial_relay:
         cmd[1] = CONTROLLING_RELAY
         cmd[2] = 0x00
         cmd[3] = 0xFF
-        cmd[4] = CLOSE_RELAY
+        cmd[4] = FLIP_RELAY
         cmd[5] = 0
         crc = pycrc.ModbusCRC(cmd[0:6])
         cmd[6] = crc & 0xFF
@@ -128,10 +128,10 @@ class Modbus_serial_relay:
         #Store result in a dict
         d = dict()
         for i in range(8):
-            if (answer[3] & 1<<i) == 1:
+            if (answer[3] & 1<<i) != 0:
                 d['Relay ' + str(i)] = 'Open'
             if (answer[3] & 1<<i) == 0:
-                d['Relay ' + str(i) +': '] = 'Close'
+                d['Relay ' + str(i)] = 'Close'
         return d
     
     def read_one_relay_state(self, relay_number:int)->dict:
@@ -149,14 +149,18 @@ class Modbus_serial_relay:
         self.serial_device.write(cmd)
         try:
             answer = self.serial_device.read(6)
+            print("answer = ", answer)
         except serial.SerialTimeoutException:
             assert False, "Timeout"
         assert answer!=b'', "No data received"
+        #Store result in a dict
         d =dict()
-        if (answer[3] & 1<< relay_number) == 1:
+        print("answer decalee = ", (answer[3] & 1<< relay_number) )
+        if (answer[3] & 1<< relay_number) != 0:
             d['Relay ' + str(relay_number)] = 'Open'
         if (answer[3] & 1<< relay_number) == 0:
             d['Relay ' + str(relay_number)] = 'Close'
+        return d
 
     def __baudrate_calculation(self, baudrate:int)->int:
         assert isinstance(baudrate, int)
@@ -179,7 +183,7 @@ class Modbus_serial_relay:
         else:
             assert False, "Non standard baudrate"
 
-    def change_device_baudrate(self, new_baudrate:int, new_parity:int) ->None:
+    def change_device_baudrate(self, new_baudrate:int=9600, new_parity:int=0) ->None:
         assert isinstance(new_baudrate, int)
         assert isinstance(new_parity, int)
         assert (new_parity>=0x00 and new_parity<= 0x02)
@@ -199,12 +203,12 @@ class Modbus_serial_relay:
         assert isinstance(new_adress, int)
         assert (new_adress>=0x01 and new_adress<= 0xFF)
         cmd = [0,0,0,0,0,0,0,0]
-        cmd[0] = self.device_adress
+        cmd[0] = BROADCAST_ADRESS
         cmd[1] = SET_BAUDRATE_ADRESS
         cmd[2] = 0x40
         cmd[3] = 0x00
         cmd[4] = 0x00
-        cmd[5] = new_adress
+        cmd[5] = new_adress # Need to be in 0x0X format
         crc = pycrc.ModbusCRC(cmd[0:6])
         cmd[6] = crc & 0xFF
         cmd[7] = crc >> 8
@@ -229,11 +233,11 @@ class Modbus_serial_relay:
         assert answer!=b'', "No data received"
         return answer[4]
 
-    def read_device_software_version(self)->int:
+    def read_device_software_version(self)->float:
         cmd = [0,0,0,0,0,0,0,0]
         cmd[0] = BROADCAST_ADRESS
         cmd[1] = READ_ADRESS_VERSION
-        cmd[2] = 0x20
+        cmd[2] = 0x80
         cmd[3] = 0x00
         cmd[4] = 0x00
         cmd[5] = 0x01
@@ -246,41 +250,4 @@ class Modbus_serial_relay:
         except serial.SerialTimeoutException:
             assert False, "Timeout"
         assert answer!=b'', "No data received"
-        return answer[4]/100
-
-
-    # LACK OF COMPREHENSION on this part
-
-    # def activate_single_relay(self, relay_number:int) -> None:
-    #     assert isinstance(relay_number, int)
-    #     assert (relay_number >= 0 and relay_number <= (NB_RELAY_PER_CARD - 1))
-    #     relay_states = self.read_all_relay_states()
-    #     cmd = [0,0,0,0,0,0,0,0,0,0]
-    #     cmd[0] = self.device_adress
-    #     cmd[1] = WRITE_RELAY_STATES
-    #     cmd[2] = 0
-    #     cmd[3] = 0
-    #     cmd[4] = 0
-    #     cmd[5] = 0x08
-    #     cmd[6] = 0x01
-    #     cmd[7] = 
-    #     crc = pycrc.ModbusCRC(cmd[0:8])
-    #     cmd[8] = crc & 0xFF
-    #     cmd[9] = crc >> 8
-    #     self.serial_device.write(cmd)
-
-    # def deactivate_single_relay(self, relay_number:int) -> None:
-    #     assert isinstance(relay_number, int)
-    #     assert (relay_number >= 0 and relay_number <= (NB_RELAY_PER_CARD - 1))
-    #     cmd = [0,0,0,0,0,0,0,0,0,0]
-    #     cmd[0] = self.device_adress
-    #     cmd[1] = WRITE_RELAY_STATES
-    #     cmd[2] = 0
-    #     cmd[3] = 0
-    #     cmd[4] = 0
-    #     cmd[5] = 0x08
-    #     cmd[6] = # NEED TO CHECK STATUS
-    #     crc = pycrc.ModbusCRC(cmd[0:8])
-    #     cmd[8] = crc & 0xFF
-    #     cmd[9] = crc >> 8
-    #     self.serial_device.write(cmd)
+        return float(answer[4]/100)
