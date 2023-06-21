@@ -15,13 +15,15 @@ CLOSE_RELAY = 0x00
 FLIP_RELAY = 0x55
 
 class Modbus_eth_relay:
-    def __init__(self, IP_adress:str, port_number:int) -> None:
+    def __init__(self, IP_adress:str='192.168.1.200', port_number:int=4196, device_adress:int=0x01) -> None:
         assert isinstance(IP_adress, str)
         assert isinstance(port_number, int)
+        assert isinstance(device_adress, int)
 
         self.IP_adress = IP_adress
         self.port_number = port_number
         self.socket = None
+        self.device_adress = device_adress
 
     # Connection method 
     def connect(self):
@@ -41,9 +43,12 @@ class Modbus_eth_relay:
 
     # Send data method 
     def send_data(self, data):
+        isinstance(data, list), "Type error"
+        data_formatted = [format(value, '02X') for value in data]
+        data_converted = bytes.fromhex(''.join(data_formatted))
         if self.socket is not None:
             try:
-                self.socket.send(data)
+                self.socket.send(data_converted)
                 print("Data sent.")
             except socket.error as e:
                 print("Socket error occurred while sending data:", str(e))
