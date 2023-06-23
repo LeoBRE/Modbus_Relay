@@ -199,15 +199,11 @@ class Modbus_eth_relay:
         cmd[7] = crc >> 8
         self.connect()
         self.send_data(cmd)
-        self.close()
-        self.connect()
-        self.send_data(cmd)
         answer = self.socket.recv(self.port_number)
         self.close()
         assert answer!=b'', "No data received"
-        #Store result in a dict
+        # Store result in a dict
         d =dict()
-        print("answer decalee = ", (answer[3] & 1<< relay_number) )
         if (answer[3] & 1<< relay_number) != 0:
             d['Relay ' + str(relay_number)] = 'Open'
         if (answer[3] & 1<< relay_number) == 0:
