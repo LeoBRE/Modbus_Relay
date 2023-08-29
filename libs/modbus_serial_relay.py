@@ -16,7 +16,7 @@ CLOSE_RELAY = 0x00
 FLIP_RELAY = 0x55
 
 class Modbus_serial_relay:
-    def __init__(self, port:str, baudrate:int=115200, device_adress:int=0x01, timeout:int=1) -> None:
+    def __init__(self, port:str, baudrate:int=9600, device_adress:int=0x01, timeout:int=1) -> None:
         assert isinstance(port, str)
         assert isinstance(baudrate, int)
         assert isinstance(device_adress, int)
@@ -25,6 +25,12 @@ class Modbus_serial_relay:
         self.device_adress = device_adress
 
     def open_single_relay(self, relay_number:int) -> None:
+        """Open a single relay.
+        If the relay is cabled as NO, this function close the relay.
+
+        Args:
+            relay_number (int): relay number (first one is 0)
+        """
         assert isinstance(relay_number, int)
         assert (relay_number >= 0 and relay_number <= (NB_RELAY_PER_CARD - 1))
         cmd = [0,0,0,0,0,0,0,0]
@@ -40,6 +46,12 @@ class Modbus_serial_relay:
         self.serial_device.write(cmd)
 
     def close_single_relay(self, relay_number:int) -> None:
+        """Close a single relay.
+        If the relay is cabled as NO, this function open the relay.
+
+        Args:
+            relay_number (int): relay number (first one is 0)
+        """
         assert isinstance(relay_number, int)
         assert (relay_number >= 0 and relay_number <= (NB_RELAY_PER_CARD - 1))
         cmd = [0,0,0,0,0,0,0,0]
@@ -55,6 +67,11 @@ class Modbus_serial_relay:
         self.serial_device.write(cmd)
 
     def flip_single_relay(self, relay_number:int) -> None:
+        """Change state of a single relay.
+
+        Args:
+            relay_number (int): relay number (first one is 0)
+        """
         assert isinstance(relay_number, int)
         assert (relay_number >= 0 and relay_number <= (NB_RELAY_PER_CARD - 1))
         cmd = [0,0,0,0,0,0,0,0]
@@ -70,6 +87,9 @@ class Modbus_serial_relay:
         self.serial_device.write(cmd)
 
     def open_all_relay(self) -> None:
+        """Open all relay.
+        If relays are cabled as NO, this function open relays.
+        """
         cmd = [0,0,0,0,0,0,0,0]
         cmd[0] = self.device_adress
         cmd[1] = CONTROLLING_RELAY
@@ -83,6 +103,9 @@ class Modbus_serial_relay:
         self.serial_device.write(cmd)
 
     def close_all_relay(self) -> None:
+        """Close all relay.
+        If relays are cabled as NO, this function close relays.
+        """
         cmd = [0,0,0,0,0,0,0,0]
         cmd[0] = self.device_adress
         cmd[1] = CONTROLLING_RELAY
@@ -96,6 +119,8 @@ class Modbus_serial_relay:
         self.serial_device.write(cmd)
 
     def flip_all_relay(self) -> None:
+        """Change state of all relays.
+        """
         cmd = [0,0,0,0,0,0,0,0]
         cmd[0] = self.device_adress
         cmd[1] = CONTROLLING_RELAY
@@ -109,6 +134,11 @@ class Modbus_serial_relay:
         self.serial_device.write(cmd)
 
     def read_all_relay_states(self) -> dict:
+        """Read all relays state
+
+        Returns:
+            dict: State of all relays (0: close, 1: open)
+        """
         cmd = [0,0,0,0,0,0,0,0]
         cmd[0] = self.device_adress
         cmd[1] = READ_STATES_OF_RELAY
@@ -135,6 +165,14 @@ class Modbus_serial_relay:
         return d
     
     def read_one_relay_state(self, relay_number:int)->dict:
+        """Read one relay state
+
+        Args:
+            relay_number (int): number of the relay state needed
+
+        Returns:
+            dict: State of the relay number
+        """
         assert isinstance(relay_number, int)
         cmd = [0,0,0,0,0,0,0,0]
         cmd[0] = self.device_adress
@@ -163,6 +201,14 @@ class Modbus_serial_relay:
         return d
 
     def __baudrate_calculation(self, baudrate:int)->int:
+        """Convert explicit baudrate to device understandable number
+
+        Args:
+            baudrate (int): baudrate to convert
+
+        Returns:
+            int: converted baudrate
+        """
         assert isinstance(baudrate, int)
         if baudrate == 4800:
             return 0x00
@@ -184,6 +230,13 @@ class Modbus_serial_relay:
             assert False, "Non standard baudrate"
 
     def change_device_baudrate(self, new_baudrate:int=9600, new_parity:int=0) ->None:
+        """Change the device baudrate and parity
+        User as to be carefull using this function as the communication no longer establish after this function is executed.
+
+        Args:
+            new_baudrate (int, optional): New baudrate to set. Defaults to 9600.
+            new_parity (int, optional): New parity to set. Defaults to 0.
+        """
         assert isinstance(new_baudrate, int)
         assert isinstance(new_parity, int)
         assert (new_parity>=0x00 and new_parity<= 0x02)
@@ -200,6 +253,12 @@ class Modbus_serial_relay:
         self.serial_device.write(cmd)
 
     def change_device_adress(self, new_adress:int) ->None:
+        """Change device adress.
+        User as to be carefull using this function as the communication no longer establish after this function is executed.
+
+        Args:
+            new_adress (int, optional): New device adress to set. Defaults to 0x01.
+        """
         assert isinstance(new_adress, int)
         assert (new_adress>=0x01 and new_adress<= 0xFF)
         cmd = [0,0,0,0,0,0,0,0]
@@ -215,6 +274,11 @@ class Modbus_serial_relay:
         self.serial_device.write(cmd)
 
     def read_device_adress(self)->int:
+        """Read device adress
+
+        Returns:
+            int: Device adress
+        """
         cmd = [0,0,0,0,0,0,0,0]
         cmd[0] = BROADCAST_ADRESS
         cmd[1] = READ_ADRESS_VERSION
@@ -234,6 +298,11 @@ class Modbus_serial_relay:
         return answer[4]
 
     def read_device_software_version(self)->float:
+        """Read device software version
+
+        Returns:
+            int: software version
+        """
         cmd = [0,0,0,0,0,0,0,0]
         cmd[0] = BROADCAST_ADRESS
         cmd[1] = READ_ADRESS_VERSION
